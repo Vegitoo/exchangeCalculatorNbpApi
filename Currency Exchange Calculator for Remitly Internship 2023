@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Currency Exchange Calculator via NBP API</title>
+</head>
+<body>
+<h1>Currency Exchange Calculator for Remitly Internship 2023</h1>
+<form>
+    <label for="amount">Amount of currency You want to send:</label>
+    <input type="number" id="amount" name="amount" min="0">
+    <br><br>
+    <label for="currency1">Currency You want to send:</label>
+    <select id="currency1" name="currency1">
+        <option value="usd">USD</option>
+        <option value="eur">EUR</option>
+        <option value="gbp">GBP</option>
+        <option value="pln">PLN</option>
+        <option value="aud">AUD</option>
+        <option value="cad">CAD</option>
+        <option value="chf">CHF</option>
+        <option value="czk">CZK</option>
+        <option value="dkk">DKK</option>
+        <option value="hkd">HKD</option>
+        <option value="huf">HUF</option>
+        <option value="ils">ILS</option>
+        <option value="inr">INR</option>
+        <option value="jpy">JPY</option>
+        <option value="krw">KRW</option>
+        <option value="mxn">MXN</option>
+        <option value="nok">NOK</option>
+        <option value="nzd">NZD</option>
+        <option value="sek">SEK</option>
+        <option value="sgd">SGD</option>
+        <option value="thb">THB</option>
+        <option value="try">TRY</option>
+        <option value="uah">UAH</option>
+        <option value="zar">ZAR</option>
+        <option value="bgn">BGN</option>
+        <option value="brl">BRL</option>
+        <option value="hrk">HRK</option>
+        <option value="myr">MYR</option>
+        <option value="php">PHP</option>
+        <option value="ron">RON</option>
+        <option value="rub">RUB</option>
+        <option value="xdr">XDR</option>
+    </select>
+    <br><br>
+    <label for="currency2">Currency They receive:</label>
+    <select id="currency2" name="currency2">
+        <option value="usd">USD</option>
+        <option value="eur">EUR</option>
+        <option value="gbp">GBP</option>
+        <option value="pln">PLN</option>
+        <option value="aud">AUD</option>
+        <option value="cad">CAD</option>
+        <option value="chf">CHF</option>
+        <option value="czk">CZK</option>
+        <option value="dkk">DKK</option>
+        <option value="hkd">HKD</option>
+        <option value="huf">HUF</option>
+        <option value="ils">ILS</option>
+        <option value="inr">INR</option>
+        <option value="jpy">JPY</option>
+        <option value="krw">KRW</option>
+        <option value="mxn">MXN</option>
+        <option value="nok">NOK</option>
+        <option value="nzd">NZD</option>
+        <option value="sek">SEK</option>
+        <option value="sgd">SGD</option>
+        <option value="thb">THB</option>
+        <option value="try">TRY</option>
+        <option value="uah">UAH</option>
+        <option value="zar">ZAR</option>
+        <option value="bgn">BGN</option>
+        <option value="brl">BRL</option>
+        <option value="hrk">HRK</option>
+        <option value="myr">MYR</option>
+        <option value="php">PHP</option>
+        <option value="ron">RON</option>
+        <option value="rub">RUB</option>
+        <option value="xdr">XDR</option>
+    </select>
+    <br><br>
+    <button type="button" onclick="calculateExchange()">Calculate</button>
+</form>
+<br><br>
+<div id="result"></div>
+<div id="valueOfOne"></div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="text/javascript">async function exchangeCalculator(amount, firstCurrency, secondCurrency) {
+    let currencyValuePln = 0;
+    let firstCurrencyValue = 0;
+    let secondCurrencyValue = 0;
+
+    if (firstCurrency === secondCurrency) {
+        throw new Error('Currencies must be different')
+    }
+
+    try {
+        const firstCurrencyResponse = await axios.get(`http://api.nbp.pl/api/exchangerates/rates/a/${firstCurrency}/?format=json`)
+        const firstCurrencyRate = parseFloat(firstCurrencyResponse.data.rates[0].mid.toString())
+        currencyValuePln += parseFloat((firstCurrencyRate * parseFloat(amount)).toFixed(2))
+
+        if (secondCurrency === 'pln') {
+            return {
+                firstCurrency: parseFloat(amount),
+                secondCurrency: currencyValuePln,
+            }
+        }
+
+        const secondCurrencyResponse = await axios.get(`http://api.nbp.pl/api/exchangerates/rates/a/${secondCurrency}/?format=json`)
+        const secondCurrencyRate = parseFloat(secondCurrencyResponse.data.rates[0].mid.toString())
+        secondCurrencyValue = parseFloat((currencyValuePln / secondCurrencyRate).toFixed(2))
+
+        return {
+            firstCurrency: firstCurrencyValue,
+            secondCurrency: secondCurrencyValue,
+        }
+
+    } catch (error) {
+        console.log(error)
+        throw new Error('Failed to exchange rates.')
+    }
+}
+
+async function calculateExchange() {
+    const amount = parseFloat(document.getElementById('amount').value)
+    const currency1 = document.getElementById('currency1').value
+    const currency2 = document.getElementById('currency2').value
+
+    try {
+        const result = await exchangeCalculator(amount, currency1, currency2)
+        document.getElementById('result').innerHTML = `You send: ${amount} ${currency1.toUpperCase()} = ${result.secondCurrency} ${currency2.toUpperCase()}`
+        document.getElementById('valueOfOne').innerHTML = `1 ${currency1.toUpperCase()} = ${(result.secondCurrency/amount).toFixed(2)} ${currency2.toUpperCase()}`
+    } catch (error) {
+        console.log(error)
+        document.getElementById('result').innerHTML = 'Failed to exchange rates.'
+    }
+}
+document.getElementById('amount').addEventListener('input', calculateExchange)
+</script>
+</body>
+</html>
